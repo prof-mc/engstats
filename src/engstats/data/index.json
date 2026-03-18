@@ -1,0 +1,29 @@
+{
+  "concrete": {
+    "description": "Concrete compressive strength vs. water-cement ratio and curing age.",
+    "columns": {
+      "water_cement": "Water-to-cement ratio (dimensionless)",
+      "age_days": "Curing age in days",
+      "strength_mpa": "Compressive strength in MPa"
+    },
+    "suggested": ["simple_linear_regression", "plot_scatter_regression", "plot_residuals"]
+  },
+  "bridges": {
+    "description": "Bridge load capacity vs. span length, by material type.",
+    "columns": {
+      "span_m": "Bridge span in metres",
+      "load_capacity_kn": "Load capacity in kilonewtons",
+      "material": "Construction material (steel / concrete / composite)"
+    },
+    "suggested": ["simple_linear_regression", "plot_boxplot", "anova_oneway"]
+  },
+  "circuits": {
+    "description": "Resistor measured values vs. nominal values across manufacturing batches.",
+    "columns": {
+      "nominal_ohm": "Nominal (labelled) resistance in ohms",
+      "measured_ohm": "Measured resistance in ohms",
+      "batch": "Manufacturing batch (A / B / C)"
+    },
+    "suggested": ["two_sample_ttest", "plot_histogram", "plot_grouped_bar"]
+  }
+}
