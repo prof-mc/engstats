@@ -52,7 +52,7 @@ def plot_correlation_heatmap(
 def plot_pairplot(
     data: pd.DataFrame,
     hue: str | None = None,
-    diag_kind: str = "kde",
+    diag_kind: str = "hist",
     title: str = "",
 ) -> sns.PairGrid:
     """

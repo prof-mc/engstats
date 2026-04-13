@@ -56,6 +56,7 @@ from engstats.plots.regression import (
     plot_scatter_regression,
     plot_residuals,
     plot_qq,
+    plot_time_series
 )
 from engstats.plots.categorical import (
     plot_bar,
@@ -65,6 +66,7 @@ from engstats.plots.probability import (
     plot_normal_curve,
     plot_binomial_pmf,
     plot_confidence_interval,
+    plot_probability_order
 )
 from engstats.plots.multivariate import (
     plot_correlation_heatmap,

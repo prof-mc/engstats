@@ -107,3 +107,77 @@ def plot_qq(
     ax.legend()
     plt.tight_layout()
     return ax
+
+
+def plot_time_series(
+    data: pd.DataFrame,
+    x: str,
+    y: list[str],
+    separate: bool = True,
+    title: str = "",
+) -> list[matplotlib.axes.Axes]:
+    """
+    Plot one to four time series variables on shared or separate axes.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        DataFrame containing all variables as columns.
+    x : str
+        Column name for the x-axis (e.g. time, year, observation order).
+    y : list of str
+        Column name(s) for the y-axis. Must contain between 1 and 4 names.
+    separate : bool
+        If True, each variable gets its own subplot with a shared x-axis.
+        If False, all series are overlaid on a single axes. Default True.
+    title : str
+        Overall figure title.
+
+    Returns
+    -------
+    list of matplotlib.axes.Axes
+        Always a list, even when only one axes is created.
+
+    Examples
+    --------
+    >>> es.plot_time_series(df, x="year", y=["load_kn"])
+    >>> es.plot_time_series(df, x="year", y=["load_kn", "span_m"], separate=False)
+    """
+    if not isinstance(y, list) or not (1 <= len(y) <= 4):
+        raise ValueError(
+            f"'y' must be a list of 1 to 4 column names, "
+            f"got {len(y) if isinstance(y, list) else type(y).__name__}."
+        )
+    from engstats.utils.validation import require_dataframe
+    require_dataframe(data, columns=[x] + y)
+
+    n = len(y)
+
+    if not separate:
+        fig, ax_single = plt.subplots(figsize=(9, 4))
+        for yvar in y:
+            ax_single.plot(data[x], data[yvar], marker="x", label=yvar)
+        ax_single.set_xlabel(x)
+        ax_single.set_ylabel("Value")
+        ax_single.set_title(title or "Time Series")
+        ax_single.legend()
+        plt.tight_layout()
+        return [ax_single]
+
+    fig, axes = plt.subplots(n, 1, figsize=(9, 3 * n), sharex=True)
+
+    if n == 1:
+        axes = [axes]
+
+    for ax, yvar in zip(axes, y):
+        ax.plot(data[x], data[yvar], marker="x", label=yvar)
+        ax.set_ylabel(yvar)
+        ax.legend(loc="upper right")
+
+    axes[-1].set_xlabel(x)
+
+    if title:
+        fig.suptitle(title, y=1.01)
+
+    plt.tight_layout()
+    return axes

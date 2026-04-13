@@ -5,6 +5,7 @@ Visualisations for common probability distributions.
 """
 
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.axes
 from scipy import stats
@@ -126,5 +127,111 @@ def plot_confidence_interval(
     ax.set_yticks([])
     ax.set_xlabel(param_name)
     ax.set_title(title or "Confidence Interval")
+    plt.tight_layout()
+    return ax
+
+
+def plot_probability_order(
+    data: pd.DataFrame,
+    x: str,
+    dist: str = "norm",
+    ci: float = 0.95,
+    xlim_left: float | None = None,
+    title: str = "",
+    xlabel: str = "",
+    ax: matplotlib.axes.Axes | None = None,
+) -> matplotlib.axes.Axes:
+    """
+    Probability plot with a fitted line and prediction interval band.
+
+    The y-axis uses a probit scale so percentiles are evenly spaced
+    visually, matching the appearance of real probability paper.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        DataFrame containing the variable of interest.
+    x : str
+        Column name of the variable to assess.
+    dist : str
+        SciPy distribution name to fit against. Default ``'norm'``.
+    ci : float
+        Confidence level for the prediction interval (0–1). Default 0.95.
+    xlim_left : float, optional
+        Force the left limit of the x-axis. Useful for variables with a
+        natural lower bound (e.g. pass ``xlim_left=0`` for time or load).
+        Defaults to None (let matplotlib decide).
+    title : str
+        Plot title. Defaults to ``'Normal Probability Plot: <x>'``.
+    xlabel : str
+        X-axis label. Defaults to the column name.
+    ax : matplotlib.axes.Axes, optional
+        Existing axes to draw on.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+
+    Examples
+    --------
+    >>> es.plot_probability(df, x="strength_mpa")
+    >>> es.plot_probability(df, x="age_days", ci=0.99, xlim_left=0)
+    """
+    import statsmodels.api as sm
+    from scipy.stats import norm
+
+    from engstats.utils.validation import require_dataframe
+    require_dataframe(data, columns=[x])
+
+    if not (0 < ci < 1):
+        raise ValueError(f"'ci' must be between 0 and 1, got {ci}.")
+
+    values = data[x].dropna().values
+    if len(values) < 3:
+        raise ValueError(
+            f"Column '{x}' has fewer than 3 non-null values — "
+            f"not enough data to fit a probability plot."
+        )
+
+    # --- 1. Normal scores and sorted data ---
+    (osm, osr), _ = stats.probplot(values, dist=dist)
+
+    # --- 2. Regression: normal scores (y) ~ sorted data (x) ---
+    X = sm.add_constant(osr)
+    ols_model = sm.OLS(osm, X).fit()
+
+    # --- 3. Prediction grid ---
+    x_grid = np.linspace(osr.min(), osr.max(), 300)
+    X_grid = sm.add_constant(x_grid)
+    sf = ols_model.get_prediction(X_grid).summary_frame(alpha=1 - ci)
+
+    # --- 4. Plot ---
+    if ax is None:
+        _, ax = plt.subplots(figsize=(6, 6))
+
+    ax.scatter(osr, osm, s=18, alpha=0.7, zorder=3, label="Data (ordered)")
+    ax.plot(x_grid, sf["mean"], "r--", linewidth=2, label="Fitted line")
+    ax.fill_between(
+        x_grid,
+        sf["obs_ci_lower"],
+        sf["obs_ci_upper"],
+        color="green",
+        alpha=0.15,
+        label=f"{int(ci * 100)}% prediction interval",
+    )
+
+    # --- 5. Percentile y-axis ticks ---
+    pticks = np.array([0.1, 1, 5, 10, 25, 50, 75, 90, 95, 99, 99.9])
+    zticks = norm.ppf(pticks / 100)
+    ax.set_yticks(zticks)
+    ax.set_yticklabels([f"{p:g}%" for p in pticks])
+
+    if xlim_left is not None:
+        ax.set_xlim(left=xlim_left)
+
+    ax.set_xlabel(xlabel or x)
+    ax.set_ylabel("Percentile")
+    ax.set_title(title or f"Normal Probability Plot: {x}")
+    ax.legend()
     plt.tight_layout()
     return ax
