@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "engstats"
-version = "0.1.0"
+version = "0.1.6"
 authors = [
     {name = "Moses Y.-H. Chan", email = "moses.chan@northwestern.edu"},
     ]

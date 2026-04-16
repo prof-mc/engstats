@@ -71,3 +71,26 @@ def plot_grouped_bar(
     ax.legend(title=hue)
     plt.tight_layout()
     return ax
+
+def plot_stackeddot(
+        data: pd.DataFrame,
+        x: str,
+        ax: matplotlib.axes.Axes | None = None,
+):
+    data["stack"] = (data.groupby(x).cumcount() + 1) / 20
+
+    if ax is None:
+        _, ax = plt.subplots(figsize=(8, 3))
+    sns.scatterplot(data=data, x=x, y="stack", s=70, ax=ax)
+
+    ymax = data["stack"].max() * 2
+
+    ax.set_ylim(0, ymax)
+
+    ax.set_title(f"Stacked Dotplot of {x}")
+    ax.set_xlabel(x)
+    ax.set_ylabel("")
+    ax.set_yticks([])
+    plt.tight_layout()
+    return ax
+

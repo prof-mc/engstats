@@ -17,7 +17,7 @@ def plot_histogram(
     bins: int | str = "auto",
     title: str = "",
     xlabel: str = "Value",
-    kde: bool = True,
+    kde: bool = False,
     color: str | None = None,
     ax: matplotlib.axes.Axes | None = None,
 ) -> matplotlib.axes.Axes:
@@ -166,4 +166,94 @@ def plot_ecdf(
     ax.set_xlabel(xlabel)
     ax.set_ylabel("Proportion")
     plt.tight_layout()
+    return ax
+
+
+def plot_pareto(
+    data: pd.DataFrame,
+    x: str,
+    title: str = "",
+    xlabel: str = "",
+    ax: matplotlib.axes.Axes | None = None,
+) -> matplotlib.axes.Axes:
+    """
+    Plot a Pareto chart for a categorical column.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Source DataFrame.
+    x : str
+        Categorical column to summarize.
+    threshold : float
+        Reference cumulative proportion, default 0.80.
+    title : str
+        Plot title.
+    xlabel : str
+        X-axis label.
+    ax : matplotlib.axes.Axes, optional
+        Existing axes to draw on.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+    """
+    if x not in data.columns:
+        raise ValueError(f"Column '{x}' not found in DataFrame.")
+
+    values = data[x].dropna()
+    if values.empty:
+        raise ValueError(f"Column '{x}' has no non-null values.")
+
+    counts = values.value_counts().sort_values(ascending=False)
+    cumperc = counts.cumsum() / counts.sum() * 100
+
+    if ax is None:
+        _, ax = plt.subplots(figsize=(8, 4))
+
+    ax2 = ax.twinx()
+
+    sns.barplot(x=counts.index, y=counts.values, ax=ax)
+    ax2.plot(range(len(counts)), cumperc.values, marker="o", linestyle="--", color="red")
+    ax2.grid(linestyle=":")
+
+    ax.set_title(title or f"Pareto Plot: {x}")
+    ax.set_xlabel(xlabel or x)
+    ax.set_ylabel("Count")
+
+    ax2.set_ylabel("Cumulative %")
+    ax2.set_ylim(0, 105)
+
+    return ax
+
+
+def plot_side_by_side(
+    data: pd.DataFrame,
+    x: list[str],
+    style: ["individual", "box"] = "individual",
+    ax: matplotlib.axes.Axes | None = None,
+):
+    if ax is None:
+        _, ax = plt.subplots(figsize=(8, 4))
+
+    if isinstance(x, str):
+        x = [x]
+    if style == "individual":
+        plot_mech = sns.swarmplot
+    elif style == "box":
+        plot_mech = sns.boxplot
+    else:
+        raise ValueError(f"Style '{style}' not supported.")
+
+    subdf = data.loc[:, data.columns.intersection(x)]
+
+    plot_mech(
+        data=subdf.melt(var_name="Variable", value_name="Value"),
+        x="Variable",
+        y="Value",
+        ax=ax,
+    )
+
+    ax.set_title(f'Side-by-side {style} plots')
+
     return ax

@@ -11,6 +11,54 @@ import seaborn as sns
 import pandas as pd
 from scipy import stats
 
+import matplotlib.colors as mcolors
+
+def plot_scatter(
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    group: str = None,
+    title: str = "",
+    ax: matplotlib.axes.Axes | None = None,
+) -> matplotlib.axes.Axes:
+
+    if ax is None:
+        _, ax = plt.subplots()
+
+    def is_color(val):
+        try:
+            mcolors.to_rgba(val)
+            return True
+        except ValueError:
+            return False
+
+    if group is not None:
+        data[group] = data[group].astype("category")
+        unique_vals = data[group].dropna().unique()
+
+        # Check if all values are valid colors
+        if all(is_color(val) for val in unique_vals):
+            palette = {val: val for val in unique_vals}
+        else:
+            palette = None  # fallback to seaborn default
+
+        sns.scatterplot(
+            data=data,
+            x=x,
+            y=y,
+            hue=group,
+            style=group,
+            palette=palette,
+            ax=ax
+        )
+    else:
+        sns.scatterplot(data=data, x=x, y=y, ax=ax)
+
+    ax.set_title(title or f"Scatter Plot: {y} vs {x}")
+    ax.set_xlabel(x)
+    ax.set_ylabel(y)
+    plt.tight_layout()
+    return ax
 
 def plot_scatter_regression(
     data: pd.DataFrame,
@@ -109,7 +157,7 @@ def plot_qq(
     return ax
 
 
-def plot_time_series(
+def plot_runplot(
     data: pd.DataFrame,
     x: str,
     y: list[str],
@@ -149,6 +197,7 @@ def plot_time_series(
             f"got {len(y) if isinstance(y, list) else type(y).__name__}."
         )
     from engstats.utils.validation import require_dataframe
+    from matplotlib.ticker import MaxNLocator
     require_dataframe(data, columns=[x] + y)
 
     n = len(y)
@@ -156,11 +205,12 @@ def plot_time_series(
     if not separate:
         fig, ax_single = plt.subplots(figsize=(9, 4))
         for yvar in y:
-            ax_single.plot(data[x], data[yvar], marker="x", label=yvar)
+            ax_single.plot(data[x], data[yvar], marker="o", label=yvar)
         ax_single.set_xlabel(x)
         ax_single.set_ylabel("Value")
         ax_single.set_title(title or "Time Series")
-        ax_single.legend()
+        ax_single.xaxis.set_major_locator(MaxNLocator(integer=True))
+        # ax_single.legend()
         plt.tight_layout()
         return [ax_single]
 
@@ -170,10 +220,10 @@ def plot_time_series(
         axes = [axes]
 
     for ax, yvar in zip(axes, y):
-        ax.plot(data[x], data[yvar], marker="x", label=yvar)
+        ax.plot(data[x], data[yvar], marker="o", label=yvar)
         ax.set_ylabel(yvar)
-        ax.legend(loc="upper right")
-
+        # ax.legend(loc="upper right")
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     axes[-1].set_xlabel(x)
 
     if title:
@@ -181,3 +231,55 @@ def plot_time_series(
 
     plt.tight_layout()
     return axes
+
+
+def plot_runplot_split(
+    data: pd.DataFrame,
+    x: str,
+    y: str,
+    group: str,
+    ax: matplotlib.axes.Axes = None
+):
+    if ax is None:
+        _, ax = plt.subplots()
+
+    def is_color(val):
+        try:
+            mcolors.to_rgba(val)
+            return True
+        except ValueError:
+            return False
+
+    if group is not None:
+        plot_data = data.copy()
+        group_order = pd.unique(plot_data[group].dropna())
+
+
+        plot_data[group] = pd.Categorical(
+            plot_data[group],
+            categories=group_order,
+            ordered=True,
+        )
+
+        # Check if all values are valid colors
+        if all(is_color(val) for val in group_order):
+            palette = {val: val for val in group_order}
+        else:
+            palette = None  # fallback to seaborn default
+
+        sns.lineplot(
+            data=plot_data,
+            x=x,
+            y=y,
+            hue=group,
+            style=group,
+            hue_order=group_order,
+            style_order=group_order,
+            palette=palette,
+            markers=True,
+            ax=ax
+        )
+    else:
+        sns.lineplot(data, x=x, y=y, hue=group, marker="o")
+
+    return ax

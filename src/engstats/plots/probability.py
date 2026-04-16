@@ -9,6 +9,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.axes
 from scipy import stats
+import seaborn as sns
 
 
 def plot_normal_curve(
@@ -221,7 +222,7 @@ def plot_probability_order(
     )
 
     # --- 5. Percentile y-axis ticks ---
-    pticks = np.array([0.1, 1, 5, 10, 25, 50, 75, 90, 95, 99, 99.9])
+    pticks = np.array([1, 5, 10, 25, 50, 75, 90, 95, 99])
     zticks = norm.ppf(pticks / 100)
     ax.set_yticks(zticks)
     ax.set_yticklabels([f"{p:g}%" for p in pticks])
@@ -229,9 +230,32 @@ def plot_probability_order(
     if xlim_left is not None:
         ax.set_xlim(left=xlim_left)
 
+    # calculate summary statistics
+    n = len(data[x])
+    xmean = np.mean(data[x])
+    xstd = np.std(data[x], ddof=1)   # sample standard deviation
+
+    from matplotlib.lines import Line2D
+    stats_handle = Line2D(
+        [], [], linestyle="none",
+        label=f"n = {n}\nμ = {xmean:.3g}\nσ = {xstd:.3g}"
+    )
+
+    handles = [
+        Line2D([0], [0], marker='o', color='none',
+               markerfacecolor='cornflowerblue', markersize=5,   markeredgewidth=0,
+               label='Data'),
+        Line2D([0], [0], color='red', linestyle='--',
+               linewidth=2, label='Fitted line'),
+        Line2D([0], [0], color='green', linewidth=6,
+               alpha=0.3, label='95% PI'),
+        stats_handle
+    ]
+
     ax.set_xlabel(xlabel or x)
     ax.set_ylabel("Percentile")
     ax.set_title(title or f"Normal Probability Plot: {x}")
-    ax.legend()
+    ax.legend(handles=handles)
     plt.tight_layout()
     return ax
+
