@@ -1,15 +1,17 @@
 # Companion package `engstats`
 
-**A companion Python package for freshman engineering statistics.**
+**A companion Python package for GEN_ENG 231 (IEMS 201) introductory engineering statistics class.**
 
-The package `engstats` wraps `statsmodels`, `scipy`, `seaborn`, and `matplotlib` behind a clean, student-friendly API — sensible defaults, readable output, and descriptive error messages.
+The package `engstats` provides a companion package to handle making visualizations for an introductory engineering statistics class.
+
+*A user manual is currently under construction.*
 
 ---
 
 ## Installation
 
 ```bash
-pip install engstats
+pip install -U engstats
 ```
 
 Or from source:
@@ -57,7 +59,7 @@ es.plot_normal_curve(mean=70, std=5, shade_above=80)
 
 ---
 
-## Bundled Datasets
+## Example Datasets
 
 | Name       | Description                                         |
 |------------|-----------------------------------------------------|
@@ -71,35 +73,6 @@ es.load_dataset("list")   # print all available datasets
 
 ---
 
-## Module Overview
-
-```
-engstats/
-├── analysis/
-│   ├── descriptive.py    # five_number_summary, summary_stats
-│   ├── regression.py     # simple/multiple/polynomial regression
-│   ├── inference.py      # t-tests, chi-square, ANOVA
-│   ├── probability.py    # normal, binomial, Poisson probabilities
-│   └── correlation.py    # Pearson, Spearman, correlation matrix
-├── plots/
-│   ├── theme.py          # auto-applied visual theme
-│   ├── distributions.py  # histogram, KDE, boxplot, violin, ECDF
-│   ├── regression.py     # scatter+line, residuals, Q-Q
-│   ├── categorical.py    # bar, grouped bar
-│   ├── probability.py    # normal curve, binomial PMF, CI
-│   └── multivariate.py   # heatmap, pairplot
-├── utils/
-│   ├── validation.py     # student-friendly input checking
-│   ├── formatting.py     # pretty_summary()
-│   └── io.py             # load_dataset()
-└── data/
-    ├── concrete.csv
-    ├── bridges.csv
-    └── circuits.csv
-```
-
----
-
 ## Running Tests
 
 ```bash
@@ -107,10 +80,3 @@ pytest tests/ -v
 ```
 
 ---
-
-## Example Notebooks
-
-See the `notebooks/` folder:
-
-- `01_descriptive_stats.ipynb`
-- `04_linear_regression.ipynb`
