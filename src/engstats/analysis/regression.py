@@ -8,6 +8,7 @@ Returns clean, student-friendly result objects.
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
+from statsmodels.formula.api import ols
 from engstats.utils.validation import require_numeric_1d, require_dataframe
 
 
@@ -38,29 +39,36 @@ class RegressionResult:
     def __init__(self, result, feature_names=None):
         self._result = result
         names = feature_names or result.model.exog_names
+        self.n = len(result.resid)
         self.coefficients = pd.Series(result.params, index=names)
         self.r_squared = result.rsquared
         self.adj_r_squared = result.rsquared_adj
         self.p_values = pd.Series(result.pvalues, index=names)
         self.conf_int = pd.DataFrame(result.conf_int()).set_axis(names)
-        self.conf_int.columns = ["CI_lower", "CI_upper"]
+        self.conf_int.columns = ["95% CI_lower", "95% CI_upper"]
         self.residuals = np.asarray(result.resid)
         self.fitted_values = np.asarray(result.fittedvalues)
-        self.model = result
 
-    def summary(self) -> pd.DataFrame:
+    def summary(self):
         """Return a tidy coefficient table with estimates, p-values, and CIs."""
+        # print(model.)
+        pd.set_option("display.precision", 4)
         df = pd.DataFrame(
             {
                 "coefficient": self.coefficients,
+                "CI[0.025]": self.conf_int["95% CI_lower"],
+                "CI[0.975]": self.conf_int["95% CI_upper"],
+                "crit_value": self._result.tvalues,
                 "p_value": self.p_values,
-                "CI_lower": self.conf_int["CI_lower"],
-                "CI_upper": self.conf_int["CI_upper"],
             }
         )
         df.index.name = "term"
+        print(f"Number of observations (n): {self.n}")
         print(f"R² = {self.r_squared:.4f}   Adj. R² = {self.adj_r_squared:.4f}")
-        return df
+
+        print(df)
+        print("----------------------------------------")
+        print(pd.DataFrame(sm.stats.anova_lm(self._result)))
 
     def __repr__(self):
         return (
@@ -95,13 +103,20 @@ def simple_linear_regression(data: pd.DataFrame, x: str, y: str) -> RegressionRe
     >>> model.summary()
     """
     data = require_dataframe(data, [x, y])
-    X = sm.add_constant(data[x].values)
-    result = sm.OLS(data[y].values, X).fit()
-    return RegressionResult(result, feature_names=["intercept", x])
+
+    formula = f'{y} ~ {x}'
+    result = ols(formula=formula, data=data).fit()
+    #
+    # if with_constant:
+    #     X = sm.add_constant(data[x].values)
+    # else:
+    #     X = data[x].values
+    # result = sm.OLS(data[y].values, X).fit()
+    return RegressionResult(result)
 
 
 def multiple_linear_regression(
-    data: pd.DataFrame, predictors: list[str], response: str
+    data: pd.DataFrame, x: list[str], y: str
 ) -> RegressionResult:
     """
     Fit a multiple linear regression model.
@@ -123,10 +138,14 @@ def multiple_linear_regression(
     --------
     >>> model = es.multiple_linear_regression(df, ["age", "water_cement"], "strength")
     """
-    data = require_dataframe(data, predictors + [response])
-    X = sm.add_constant(data[predictors].values)
-    result = sm.OLS(data[response].values, X).fit()
-    return RegressionResult(result, feature_names=["intercept"] + predictors)
+    data = require_dataframe(data, x + [y])
+
+    formula = f'{y} ~ {' + '.join(x)}'
+    result = ols(formula=formula, data=data).fit()
+
+    # X = sm.add_constant(data[predictors].values)
+    # result = sm.OLS(data[response].values, X).fit()
+    return RegressionResult(result)
 
 
 def polynomial_regression(

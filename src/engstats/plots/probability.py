@@ -141,7 +141,7 @@ def plot_probability_order(
     title: str = "",
     xlabel: str = "",
     ax: matplotlib.axes.Axes | None = None,
-) -> matplotlib.axes.Axes:
+):
     """
     Probability plot with a fitted line and prediction interval band.
 
@@ -257,5 +257,5 @@ def plot_probability_order(
     ax.set_title(title or f"Normal Probability Plot: {x}")
     ax.legend(handles=handles)
     plt.tight_layout()
-    return ax
+    return #ax
 
