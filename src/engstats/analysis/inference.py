@@ -13,7 +13,7 @@ pd.set_option('display.precision', 4)
 class InferenceResult:
     """Container for hypothesis test output."""
 
-    def __init__(self, test_name, statistic, p_value, conf_int_low, conf_int_high, extra=None):
+    def __init__(self, test_name, statistic, p_value, conf_int_low=None, conf_int_high=None, extra=None):
         self.test_name = test_name
         self.statistic = statistic
         self.p_value = p_value
@@ -23,27 +23,34 @@ class InferenceResult:
 
     def __repr__(self):
         pd.set_option("display.precision", 4)
-        return (
+        repr_str = (
             f"{self.test_name}\n"
             f"  statistic = {self.statistic}\n"
             f"  p-value   = {self.p_value}\n"
-            f"  CI_low  = {self.conf_int_low}\t"
-            f"  CI_high = {self.conf_int_high}\n"
         )
+        if 't-test' in self.test_name:
+            repr_str += (
+                f"  CI_low  = {self.conf_int_low}\t"
+                f"  CI_high = {self.conf_int_high}\n"
+            )
+        return repr_str
+
 
     def summary(self) -> pd.DataFrame:
         pd.set_option("display.precision", 4)
         row = {"test": self.test_name,
                "statistic": self.statistic,
                "p_value": self.p_value,
-               "CI_low": self.conf_int_low,
-               "CI_high": self.conf_int_high
                }
+        if 't-test' in self.test_name:
+            row["CI_low"] = self.conf_int_low
+            row["CI_high"] = self.conf_int_high
         row.update(self._extra)
         return pd.DataFrame([row])
 
 
-def one_sample_ttest(data, popmean: float, alternative: str = "two-sided", confidence=0.95) -> InferenceResult:
+def one_sample_ttest(data, popmean: float, alternative: str = "two-sided",
+                     confidence=0.95) -> InferenceResult:
     """
     One-sample t-test: test whether the sample mean equals a hypothesised value.
 

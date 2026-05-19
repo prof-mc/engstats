@@ -116,12 +116,14 @@ def plot_confidence_interval(
     if ax is None:
         _, ax = plt.subplots(figsize=(6, 2.5))
     # Try to extract CI from the result's _extra dict or fall back to t-based CI
-    ci = result._extra.get("ci", None)
-    if ci is None:
+    lo = result.conf_int_low
+    hi = result.conf_int_high
+    if lo is None or hi is None:
         ax.text(0.5, 0.5, "No CI available for this test type.",
                 ha="center", va="center", transform=ax.transAxes)
         return ax
-    lo, hi, est = ci
+    est = (lo + hi)/2
+
     ax.errorbar(est, 0, xerr=[[est - lo], [hi - est]], fmt="o",
                 capsize=8, capthick=2, linewidth=2)
     ax.axvline(0, linestyle="--", color="grey", linewidth=1)
