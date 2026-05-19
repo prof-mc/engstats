@@ -58,7 +58,7 @@ def plot_scatter(
     ax.set_xlabel(x)
     ax.set_ylabel(y)
     plt.tight_layout()
-    return ax
+    return #ax
 
 def plot_scatter_regression(
     data: pd.DataFrame,
@@ -100,7 +100,7 @@ def plot_scatter_regression(
     ax.set_xlabel(x)
     ax.set_ylabel(y)
     plt.tight_layout()
-    return ax
+    return #ax
 
 
 def plot_residuals(
@@ -126,7 +126,7 @@ def plot_residuals(
     ax.set_xlabel("Fitted values")
     ax.set_ylabel("Residuals")
     plt.tight_layout()
-    return ax
+    return #ax
 
 
 def plot_qq(
@@ -154,7 +154,7 @@ def plot_qq(
     ax.set_ylabel("Sample quantiles")
     ax.legend()
     plt.tight_layout()
-    return ax
+    return #ax
 
 
 def plot_runplot(
@@ -230,7 +230,7 @@ def plot_runplot(
         fig.suptitle(title, y=1.01)
 
     plt.tight_layout()
-    return axes
+    return #axes
 
 
 def plot_runplot_split(
@@ -282,4 +282,4 @@ def plot_runplot_split(
     else:
         sns.lineplot(data, x=x, y=y, hue=group, marker="o")
 
-    return ax
+    return #ax
