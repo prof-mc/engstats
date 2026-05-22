@@ -41,6 +41,7 @@ class RegressionResult:
         names = feature_names or result.model.exog_names
         self.n = len(result.resid)
         self.coefficients = pd.Series(result.params, index=names)
+        self.se_coefficients = pd.Series(result.bse, index=names)
         self.r_squared = result.rsquared
         self.adj_r_squared = result.rsquared_adj
         self.p_values = pd.Series(result.pvalues, index=names)
@@ -56,10 +57,11 @@ class RegressionResult:
         df = pd.DataFrame(
             {
                 "coefficient": self.coefficients,
+                "SE coef": self.se_coefficients,
                 "CI[0.025]": self.conf_int["95% CI_lower"],
                 "CI[0.975]": self.conf_int["95% CI_upper"],
-                "crit_value": self._result.tvalues,
                 "p_value": self.p_values,
+                "crit_value": self._result.tvalues,
             }
         )
         df.index.name = "term"
@@ -99,7 +101,7 @@ def simple_linear_regression(data: pd.DataFrame, x: str, y: str) -> RegressionRe
     --------
     >>> import engstats as es
     >>> df = es.load_dataset("concrete")
-    >>> model = es.simple_linear_regression(df, x="water_cement", y="strength")
+    >>> model = es.simple_linear_regression(df, x="water_cement", y="strength_mpa")
     >>> model.summary()
     """
     data = require_dataframe(data, [x, y])
@@ -136,11 +138,11 @@ def multiple_linear_regression(
 
     Examples
     --------
-    >>> model = es.multiple_linear_regression(df, ["age", "water_cement"], "strength")
+    >>> model = es.multiple_linear_regression(df, ["age_days", "water_cement"], "strength_mpa")
     """
     data = require_dataframe(data, x + [y])
 
-    formula = f'{y} ~ {' + '.join(x)}'
+    formula = f'{y} ~ {" + ".join(x)}'
     result = ols(formula=formula, data=data).fit()
 
     # X = sm.add_constant(data[predictors].values)
