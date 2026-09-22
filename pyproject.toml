@@ -30,3 +30,8 @@ include = ["engstats*"]
 
 [tool.setuptools.package-data]
 "engstats.data" = ["*.csv", "*.json"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
