@@ -185,8 +185,6 @@ def plot_pareto(
         Source DataFrame.
     x : str
         Categorical column to summarize.
-    threshold : float
-        Reference cumulative proportion, default 0.80.
     title : str
         Plot title.
     xlabel : str

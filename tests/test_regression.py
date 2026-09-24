@@ -18,7 +18,8 @@ df = pd.DataFrame({"x": x, "y": y})
 
 def test_simple_linear_regression_coefficients():
     model = simple_linear_regression(df, x="x", y="y")
-    assert pytest.approx(model.coefficients["intercept"], abs=0.5) == 3.0
+    print(model.coefficients)
+    assert pytest.approx(model.coefficients["Intercept"], abs=0.5) == 3.0
     assert pytest.approx(model.coefficients["x"], abs=0.3) == 2.5
 
 
@@ -37,7 +38,7 @@ def test_multiple_regression():
     df2 = df.copy()
     df2["z"] = z
     df2["y"] = 1.0 + 2.0 * df2["x"] + 1.5 * z + rng.normal(0, 0.5, N)
-    model = multiple_linear_regression(df2, predictors=["x", "z"], response="y")
+    model = multiple_linear_regression(df2, x=["x", "z"], y="y")
     assert "x" in model.coefficients.index
     assert "z" in model.coefficients.index
     assert model.r_squared > 0.9

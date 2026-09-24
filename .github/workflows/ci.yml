@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [main, mkdocs]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  MPLBACKEND: Agg          # headless matplotlib
+  PYTHONIOENCODING: utf-8  # R², ≤ in printed output on Windows runners
+
+jobs:
+  test:
+    name: pytest - ${{ matrix.os }} - py${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+        include:
+          # students run this on laptops; cover the other two platforms once
+          - os: windows-latest
+            python-version: "3.13"
+          - os: macos-latest
+            python-version: "3.13"
+    steps:
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/checkout@v7
+      - name: Install (locked)
+        run: uv sync --locked --extra dev
+      - name: Run tests
+        run: uv run --no-sync pytest -v
+
+  build:
+    name: build + wheel test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          python-version: "3.13"
+      - name: Build sdist and wheel
+        run: uv build
+      - name: Import from wheel and load bundled data
+        run: |
+          uv run --isolated --no-project --with dist/*.whl python -c "
+          import engstats as es
+          for name in ('concrete', 'bridges', 'circuits'):
+              df = es.load_dataset(name)
+              assert len(df) > 0, name
+          from importlib.metadata import version; print('engstats', version('engstats'), 'OK')
+          "
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
