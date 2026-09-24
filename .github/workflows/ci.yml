@@ -35,9 +35,9 @@ jobs:
     steps:
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
-      - uses: actions/checkout@v7
         with:
           python-version: ${{ matrix.python-version }}
+      - uses: actions/checkout@v7
       - name: Install (locked)
         run: uv sync --locked --extra dev
       - name: Run tests

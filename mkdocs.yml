@@ -1,7 +1,7 @@
 site_name: engstats
 site_description: A companion Python package for probability and statistics for engineers.
 site_author: Moses Y.-H. Chan
-site_url: !ENV [READTHEDOCS_CANONICAL_URL, ""]
+site_url: !ENV [SITE_URL, READTHEDOCS_CANONICAL_URL, ""]
 repo_url: https://github.com/prof-mc/engstats
 repo_name: prof-mc/engstats
 edit_uri: edit/main/docs/
