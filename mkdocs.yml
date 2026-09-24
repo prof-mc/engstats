@@ -1,0 +1,120 @@
+site_name: engstats
+site_description: A companion Python package for probability and statistics for engineers.
+site_author: Moses Y.-H. Chan
+site_url: !ENV [READTHEDOCS_CANONICAL_URL, ""]
+repo_url: https://github.com/prof-mc/engstats
+repo_name: prof-mc/engstats
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; Moses Y.-H. Chan
+
+theme:
+  name: material
+  language: en
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.action.edit
+    - toc.follow
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          inventories:
+            - https://docs.python.org/3/objects.inv
+            - https://numpy.org/doc/stable/objects.inv
+            - https://pandas.pydata.org/docs/objects.inv
+            - https://docs.scipy.org/doc/scipy/objects.inv
+            - https://matplotlib.org/stable/objects.inv
+          options:
+            docstring_style: numpy
+            docstring_section_style: table
+            show_root_heading: true
+            show_root_full_path: false
+            show_source: true
+            show_signature_annotations: true
+            separate_signature: true
+            signature_crossrefs: true
+            members_order: source
+            merge_init_into_class: true
+            filters: ["!^_"]
+            heading_level: 2
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+extra_javascript:
+  - assets/mathjax.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - User guide:
+      - guide/index.md
+      - Descriptive statistics: guide/descriptive.md
+      - Hypothesis testing: guide/inference.md
+      - Regression: guide/regression.md
+      - Plotting: guide/plotting.md
+  - API reference:
+      - reference/index.md
+      - Analysis:
+          - Descriptive: reference/analysis/descriptive.md
+          - Inference: reference/analysis/inference.md
+          - Regression: reference/analysis/regression.md
+          - Correlation: reference/analysis/correlation.md
+      - Plots:
+          - Distributions: reference/plots/distributions.md
+          - Regression: reference/plots/regression.md
+          - Categorical: reference/plots/categorical.md
+          - Multivariate: reference/plots/multivariate.md
+          - Theme: reference/plots/theme.md
+      - Utilities:
+          - I/O: reference/utils/io.md
+          - Validation: reference/utils/validation.md
+          - Formatting: reference/utils/formatting.md
+  - Contributing: contributing.md

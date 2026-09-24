@@ -1,30 +1,40 @@
-# Companion package `engstats`
-
-**A companion Python package for GEN_ENG 231 introductory engineering statistics class.**
-
-The package `engstats` provides a companion package to handle making visualizations for an introductory engineering statistics class.
-
-*A user manual is currently under construction.*
-
----
+# Getting started
 
 ## Installation
 
-```bash
-pip install -U engstats
+=== "pip"
+
+    ```bash
+    pip install -U engstats
+    ```
+
+=== "uv"
+
+    ```bash
+    uv add engstats
+    ```
+
+=== "From source"
+
+    ```bash
+    git clone https://github.com/prof-mc/engstats
+    cd engstats
+    uv sync --extra dev
+    ```
+
+`engstats` requires Python 3.11 or newer.
+
+## Importing
+
+```python
+import engstats as es
 ```
 
-Or from source:
+Importing the package applies the course plot theme globally (see
+[`apply_theme`](reference/plots/theme.md)). Every public function is available at the
+top level as `es.<name>`.
 
-```bash
-git clone https://github.com/prof-mc/engstats
-cd engstats
-pip install -e ".[dev]"
-```
-
----
-
-## Quick Start
+## A first analysis
 
 ```python
 import engstats as es
@@ -54,15 +64,5 @@ print(result)
 
 # Probability (use scipy.stats directly)
 from scipy import stats
-p = stats.norm.cdf(1.96)          # P(Z ≤ 1.96) ≈ 0.975
+p = stats.norm.cdf(1.96)          # P(Z <= 1.96) ~ 0.975
 ```
-
----
-
-## Running Tests
-
-```bash
-pytest tests/ -v
-```
-
----

@@ -127,9 +127,9 @@ def multiple_linear_regression(
     ----------
     data : pd.DataFrame
         DataFrame containing all columns.
-    predictors : list of str
+    x : list of str
         Names of predictor columns.
-    response : str
+    y : str
         Name of the response column.
 
     Returns

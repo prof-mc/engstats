@@ -33,5 +33,12 @@ include = ["engstats*"]
 
 [dependency-groups]
 dev = [
-    "pytest>=9.0.2",
+    "uv-publish>=1.4",
+    "pytest>=9.0.2"
+]
+docs = [
+    "mkdocs>=1.6,<2",
+    "mkdocs-material>=9.7",
+    "mkdocstrings[python]>=0.30",
+    "ruff>=0.6",
 ]

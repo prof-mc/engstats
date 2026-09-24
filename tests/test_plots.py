@@ -12,7 +12,6 @@ from engstats.plots.distributions import (
 )
 from engstats.plots.regression import plot_scatter_regression, plot_residuals, plot_qq
 from engstats.plots.categorical import plot_bar, plot_grouped_bar
-from engstats.plots.probability import plot_normal_curve, plot_binomial_pmf
 from engstats.plots.multivariate import plot_correlation_heatmap, plot_pairplot
 from engstats.analysis.regression import simple_linear_regression
 
@@ -80,21 +79,6 @@ def test_plot_grouped_bar():
     DF2 = DF.copy()
     DF2["group2"] = rng.choice(["X", "Y"], len(DF))
     ax = plot_grouped_bar(DF2, x="group", y="y", hue="group2")
-    assert hasattr(ax, "get_title")
-
-
-def test_plot_normal_curve():
-    ax = plot_normal_curve(mean=0, std=1)
-    assert hasattr(ax, "get_title")
-
-
-def test_plot_normal_curve_shaded():
-    ax = plot_normal_curve(mean=0, std=1, shade_above=1.96)
-    assert hasattr(ax, "get_title")
-
-
-def test_plot_binomial_pmf():
-    ax = plot_binomial_pmf(n=20, p=0.4)
     assert hasattr(ax, "get_title")
 
 
