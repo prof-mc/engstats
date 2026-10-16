@@ -27,18 +27,29 @@ def plot_histogram(
     Parameters
     ----------
     data : array-like
-    bins : int or 'auto'
+        Numeric data.
+    bins : int or str
+        Number of bins, or a NumPy binning rule such as ``'auto'``,
+        ``'sturges'`` or ``'fd'``. Default ``'auto'``.
     title : str
+        Plot title. Defaults to ``"Histogram"``.
     xlabel : str
+        X-axis label. Default ``"Value"``.
     kde : bool
-        Overlay a kernel density estimate. Default True.
+        Overlay a kernel density estimate. Default False.
     color : str, optional
+        Bar colour.
     ax : matplotlib.axes.Axes, optional
         Existing axes to draw on.
 
     Returns
     -------
     matplotlib.axes.Axes
+
+    Examples
+    --------
+    >>> df = es.load_dataset("concrete")
+    >>> es.plot_histogram(df["strength_mpa"], bins=10, kde=True, xlabel="Strength (MPa)")
     """
     arr = require_numeric_1d(data, "data")
     if ax is None:
@@ -65,11 +76,26 @@ def plot_kde(
     Parameters
     ----------
     data : array-like
-    title, xlabel : str
+        Numeric data.
+    title : str
+        Plot title. Defaults to ``"Density Estimate"``.
+    xlabel : str
+        X-axis label. Default ``"Value"``.
     fill : bool
-        Shade area under the KDE curve.
+        Shade the area under the curve. Default True.
     color : str, optional
+        Curve colour.
     ax : matplotlib.axes.Axes, optional
+        Existing axes to draw on.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+
+    Examples
+    --------
+    >>> df = es.load_dataset("concrete")
+    >>> es.plot_kde(df["strength_mpa"], xlabel="Strength (MPa)")
     """
     arr = require_numeric_1d(data, "data")
     if ax is None:
@@ -99,7 +125,34 @@ def plot_boxplot(
 
     Usage B — DataFrame with grouping::
 
-        es.plot_boxplot(df, x="material", y="strength")
+        es.plot_boxplot(df, x="material", y="load_capacity_kn")
+
+    Points beyond 1.5 × IQR from the box are drawn individually as outliers.
+
+    Parameters
+    ----------
+    data : pd.DataFrame, optional
+        Source DataFrame (usage B).
+    x : str, optional
+        Categorical column; one box per group. Omit for a single box
+        of ``y``.
+    y : str, optional
+        Numeric column (usage B).
+    values : array-like, optional
+        Numeric data (usage A). Takes precedence over ``data``.
+    title : str
+        Plot title. Defaults to ``"Box Plot"``.
+    ax : matplotlib.axes.Axes, optional
+        Existing axes to draw on.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+
+    Raises
+    ------
+    ValueError
+        If neither ``values`` nor both ``data`` and ``y`` are given.
     """
     if ax is None:
         _, ax = plt.subplots()
@@ -127,7 +180,38 @@ def plot_violin(
     """
     Plot a violin plot (combines box plot with KDE).
 
-    Usage mirrors :func:`plot_boxplot`.
+    Usage mirrors [`plot_boxplot`][engstats.plots.distributions.plot_boxplot]: pass ``values=`` for one array, or
+    ``data``, ``y`` and optionally ``x`` for grouped violins.
+
+    Parameters
+    ----------
+    data : pd.DataFrame, optional
+        Source DataFrame (usage B).
+    x : str, optional
+        Categorical column; one violin per group. Omit for a single violin
+        of ``y``.
+    y : str, optional
+        Numeric column (usage B).
+    values : array-like, optional
+        Numeric data (usage A). Takes precedence over ``data``.
+    title : str
+        Plot title. Defaults to ``"Violin Plot"``.
+    ax : matplotlib.axes.Axes, optional
+        Existing axes to draw on.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+
+    Raises
+    ------
+    ValueError
+        If neither ``values`` nor both ``data`` and ``y`` are given.
+
+    Examples
+    --------
+    >>> df = es.load_dataset("bridges")
+    >>> es.plot_violin(df, x="material", y="load_capacity_kn")
     """
     if ax is None:
         _, ax = plt.subplots()
@@ -153,10 +237,29 @@ def plot_ecdf(
     """
     Plot the empirical cumulative distribution function (ECDF).
 
+    The ECDF at value *v* is the proportion of observations ≤ *v*.
+
     Parameters
     ----------
     data : array-like
-    title, xlabel : str
+        Numeric data.
+    title : str
+        Plot title. Defaults to ``"ECDF"``.
+    xlabel : str
+        X-axis label. Default ``"Value"``.
+    color : str, optional
+        Line colour.
+    ax : matplotlib.axes.Axes, optional
+        Existing axes to draw on.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+
+    Examples
+    --------
+    >>> df = es.load_dataset("concrete")
+    >>> es.plot_ecdf(df["strength_mpa"], xlabel="Strength (MPa)")
     """
     arr = require_numeric_1d(data, "data")
     if ax is None:
@@ -179,6 +282,10 @@ def plot_pareto(
     """
     Plot a Pareto chart for a categorical column.
 
+    Bars show the count of each category in descending order; the dashed
+    line (right axis) shows the cumulative percentage. Missing values are
+    dropped.
+
     Parameters
     ----------
     data : pd.DataFrame
@@ -195,6 +302,17 @@ def plot_pareto(
     Returns
     -------
     matplotlib.axes.Axes
+        The bar-chart axes. The cumulative line is on a twin axes.
+
+    Raises
+    ------
+    ValueError
+        If ``x`` is not a column or has no non-missing values.
+
+    Examples
+    --------
+    >>> df = es.load_dataset("bridges")
+    >>> es.plot_pareto(df, x="material")
     """
     if x not in data.columns:
         raise ValueError(f"Column '{x}' not found in DataFrame.")
@@ -231,6 +349,36 @@ def plot_side_by_side(
     style: ["individual", "box"] = "individual",
     ax: matplotlib.axes.Axes | None = None,
 ):
+    """
+    Compare several numeric columns side by side on one shared y-axis.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Source DataFrame.
+    x : list of str or str
+        Column(s) to compare, one position on the x-axis each. Names not
+        found in ``data`` are skipped silently.
+    style : {'individual', 'box'}
+        ``'individual'`` draws every observation as a dot (swarm plot);
+        ``'box'`` draws a box plot per column. Default ``'individual'``.
+    ax : matplotlib.axes.Axes, optional
+        Existing axes to draw on. A new 8 × 4 figure is created otherwise.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+
+    Raises
+    ------
+    ValueError
+        If ``style`` is not ``'individual'`` or ``'box'``.
+
+    Examples
+    --------
+    >>> df = es.load_dataset("circuits")
+    >>> es.plot_side_by_side(df, x=["nominal_ohm", "measured_ohm"], style="box")
+    """
     if ax is None:
         _, ax = plt.subplots(figsize=(8, 4))
 

@@ -1,7 +1,14 @@
 # Hypothesis testing
 
 Every test returns an `InferenceResult` with `statistic`, `p_value`, and (for t-tests)
-a confidence interval. Call `.summary()` for a one-row DataFrame.
+a confidence interval in `conf_int_low` / `conf_int_high`. Call `.summary()` for a
+one-row DataFrame.
+
+| Test | The confidence interval covers |
+|------|--------------------------------|
+| `one_sample_ttest` | the population mean \(\mu\) |
+| `two_sample_ttest` | the difference \(\mu_a - \mu_b\) |
+| `paired_ttest` | the mean difference \(\mu_d\) = mean(before − after) |
 
 ## One-sample t-test
 

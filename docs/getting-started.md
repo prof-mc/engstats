@@ -31,8 +31,9 @@ import engstats as es
 ```
 
 Importing the package applies the course plot theme globally (see
-[`apply_theme`](reference/plots/theme.md)). Every public function is available at the
-top level as `es.<name>`.
+[`apply_theme`](reference/plots/theme.md)). Every analysis and plotting function is
+available at the top level as `es.<name>`. The result classes (`InferenceResult`,
+`RegressionResult`) and the helpers in `engstats.utils` are imported from their modules.
 
 ## A first analysis
 

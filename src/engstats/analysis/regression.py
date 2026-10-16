@@ -16,10 +16,18 @@ class RegressionResult:
     """
     Lightweight container for regression output.
 
+    Returned by every regression function in this module.
+
     Attributes
     ----------
+    n : int
+        Number of observations used in the fit.
     coefficients : pd.Series
-        Fitted coefficients (intercept first).
+        Fitted coefficients, intercept first. Index labels are ``Intercept``
+        plus column names for linear models, and ``intercept``, ``x^1``,
+        ``x^2``, ... for [`polynomial_regression`][engstats.analysis.regression.polynomial_regression].
+    se_coefficients : pd.Series
+        Standard error of each coefficient.
     r_squared : float
         Coefficient of determination (R²).
     adj_r_squared : float
@@ -27,13 +35,12 @@ class RegressionResult:
     p_values : pd.Series
         p-value for each coefficient.
     conf_int : pd.DataFrame
-        95 % confidence intervals for each coefficient.
+        95 % confidence intervals for each coefficient, with columns
+        ``95% CI_lower`` and ``95% CI_upper``.
     residuals : np.ndarray
         Observed minus predicted values.
     fitted_values : np.ndarray
         Model predictions on the training data.
-    model : statsmodels RegressionResults
-        The underlying statsmodels object for advanced use.
     """
 
     def __init__(self, result, feature_names=None):
@@ -52,7 +59,19 @@ class RegressionResult:
         self.fitted_values = np.asarray(result.fittedvalues)
 
     def summary(self):
-        """Return a tidy coefficient table with estimates, p-values, and CIs."""
+        """
+        Print the fitted model summary.
+
+        Prints n, R² and adjusted R², a coefficient table (``coefficient``,
+        ``SE coef``, 95 % CI bounds, ``p_value``, and ``crit_value``, the
+        t-statistic for each coefficient), and the ANOVA table.
+
+        Returns
+        -------
+        None
+            Output is printed, not returned. Use the attributes
+            (``coefficients``, ``p_values``, ...) to work with the numbers.
+        """
         # print(model.)
         pd.set_option("display.precision", 4)
         df = pd.DataFrame(
@@ -98,6 +117,11 @@ def simple_linear_regression(data: pd.DataFrame, x: str, y: str) -> RegressionRe
     -------
     RegressionResult
 
+    Raises
+    ------
+    KeyError
+        If ``x`` or ``y`` is not a column of ``data``.
+
     Examples
     --------
     >>> import engstats as es
@@ -122,7 +146,7 @@ def multiple_linear_regression(
     data: pd.DataFrame, x: list[str], y: str
 ) -> RegressionResult:
     """
-    Fit a multiple linear regression model.
+    Fit a multiple linear regression model: y = β₀ + β₁·x₁ + … + β_p·x_p.
 
     Parameters
     ----------
@@ -139,7 +163,9 @@ def multiple_linear_regression(
 
     Examples
     --------
-    >>> model = es.multiple_linear_regression(df, ["age_days", "water_cement"], "strength_mpa")
+    >>> df = es.load_dataset("concrete")
+    >>> model = es.multiple_linear_regression(df, x=["age_days", "water_cement"], y="strength_mpa")
+    >>> model.summary()
     """
     data = require_dataframe(data, x + [y])
 
@@ -155,11 +181,12 @@ def polynomial_regression(
     data: pd.DataFrame, x: str, y: str, degree: int = 2
 ) -> RegressionResult:
     """
-    Fit a polynomial regression model of a given degree.
+    Fit a polynomial regression model: y = β₀ + β₁·x + β₂·x² + … + β_d·x^d.
 
     Parameters
     ----------
     data : pd.DataFrame
+        DataFrame containing both columns.
     x : str
         Predictor column name.
     y : str
@@ -170,10 +197,13 @@ def polynomial_regression(
     Returns
     -------
     RegressionResult
+        Coefficients are labelled ``intercept``, ``<x>^1``, ..., ``<x>^degree``.
 
     Examples
     --------
-    >>> model = es.polynomial_regression(df, x="temp", y="yield", degree=3)
+    >>> df = es.load_dataset("concrete")
+    >>> model = es.polynomial_regression(df, x="water_cement", y="strength_mpa", degree=2)
+    >>> model.coefficients
     """
     data = require_dataframe(data, [x, y])
     if not (isinstance(degree, int) and degree >= 1):

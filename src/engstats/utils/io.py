@@ -33,12 +33,27 @@ def load_dataset(name: str) -> pd.DataFrame:
     Parameters
     ----------
     name : str
-        Dataset name (without .csv extension).
-        Call ``es.load_dataset('list')`` to print available datasets.
+        Dataset name (without .csv extension): ``"concrete"``,
+        ``"bridges"`` or ``"circuits"``. Pass ``"list"`` to print the
+        available names instead.
 
     Returns
     -------
-    pd.DataFrame
+    pd.DataFrame or None
+        The dataset, or ``None`` when ``name="list"``.
+
+    Raises
+    ------
+    FileNotFoundError
+        If no bundled dataset has that name.
+
+    Notes
+    -----
+    | Dataset    | Columns                                              |
+    |------------|------------------------------------------------------|
+    | `concrete` | `water_cement` (ratio), `age_days`, `strength_mpa`   |
+    | `bridges`  | `span_m`, `load_capacity_kn`, `material`             |
+    | `circuits` | `nominal_ohm`, `measured_ohm`, `batch` (A / B / C)   |
 
     Examples
     --------

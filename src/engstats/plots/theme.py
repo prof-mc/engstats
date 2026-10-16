@@ -8,8 +8,8 @@ Built on top of seaborn's theming system and matplotlib rcParams.
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Colour palette — muted, accessible, works on white backgrounds
 PALETTE = ["#2563EB", "#DC2626", "#16A34A", "#D97706", "#7C3AED", "#0891B2"]
+"""Default colour cycle (muted, readable on white): blue, red, green, amber, violet, cyan."""
 BACKGROUND = "#FFFFFF"
 GRID_COLOR = "#E5E7EB"
 TEXT_COLOR = "#1F2937"
@@ -21,6 +21,20 @@ def apply_theme() -> None:
 
     Called automatically on ``import engstats``. Safe to call again
     if rcParams are reset by other libraries.
+
+    Sets seaborn's ``whitegrid`` style, the colour cycle in [`PALETTE`][engstats.plots.theme.PALETTE],
+    an 8 × 5 inch default figure size at 110 dpi, and matching font sizes
+    and grid colours. To undo it for a session, call
+    ``matplotlib.rcdefaults()``.
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    >>> import engstats as es
+    >>> es.apply_theme()
     """
     sns.set_theme(
         style="whitegrid",

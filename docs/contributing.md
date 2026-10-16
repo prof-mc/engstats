@@ -37,9 +37,21 @@ def pearson_r(x, y):
 
     Returns
     -------
-    InferenceResult
+    dict
+        ``{"r": float, "p_value": float, "n": int}``.
+
+    Examples
+    --------
+    >>> df = es.load_dataset("concrete")
+    >>> es.pearson_r(df["water_cement"], df["strength_mpa"])
     """
 ```
 
-New modules need a one-line stub in `docs/reference/` and an entry under `nav:` in
-`mkdocs.yml`.
+Every public function and class needs a docstring with `Parameters`, `Returns` and a
+runnable `Examples` block that uses a bundled dataset, so the example works when pasted.
+Link to other engstats objects with ``[`name`][engstats.module.name]``; Sphinx roles such
+as `:func:` are shown as plain text.
+
+New modules need a one-line stub in `docs/reference/`, an entry under `nav:` in
+`mkdocs.yml`, and a row in `docs/reference/index.md`. New top-level functions also go in
+`__all__` in `src/engstats/__init__.py`.
