@@ -12,6 +12,13 @@ Quick start
 >>> es.plot_scatter_regression(df, x="water_cement", y="strength_mpa")
 """
 
+from importlib.metadata import PackageNotFoundError, version as _version
+
+try:
+    __version__ = _version("engstats")
+except PackageNotFoundError:  # running from a source tree that isn't installed
+    __version__ = "0+unknown"
+
 # Apply the default plot theme on import
 from engstats.plots.theme import apply_theme
 apply_theme()
