@@ -60,9 +60,10 @@ class InferenceResult:
         Returns
         -------
         pd.DataFrame
-            Columns ``test``, ``statistic``, ``p_value``; t-tests add
-            ``CI_low``, ``CI_high`` and the test settings (sample sizes,
-            ``alternative``, ``confidence``).
+            Columns ``test``, ``statistic``, ``p_value``, plus test-specific
+            fields: t-tests add ``CI_low``, ``CI_high``, sample sizes,
+            ``alternative`` and ``confidence``; chi-square tests add ``dof``;
+            ANOVA adds ``k`` (number of groups) and ``n`` (total observations).
         """
         pd.set_option("display.precision", 4)
         row = {"test": self.test_name,
@@ -233,7 +234,9 @@ def chi_square_test(observed, expected=None) -> InferenceResult:
     Returns
     -------
     InferenceResult
-        ``statistic`` is χ². No confidence interval.
+        ``statistic`` is χ². ``summary()`` adds ``dof``: k − 1 for
+        goodness-of-fit, (rows − 1)(columns − 1) for independence. No
+        confidence interval.
 
     Examples
     --------
@@ -265,7 +268,8 @@ def anova_oneway(*groups) -> InferenceResult:
     Returns
     -------
     InferenceResult
-        ``statistic`` is F. No confidence interval.
+        ``statistic`` is F, with k − 1 and n − k degrees of freedom.
+        ``summary()`` adds ``k`` and ``n``. No confidence interval.
 
     Examples
     --------

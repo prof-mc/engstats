@@ -192,12 +192,19 @@ def polynomial_regression(
     y : str
         Response column name.
     degree : int
-        Polynomial degree (default 2).
+        Polynomial degree, 1 or more (default 2).
 
     Returns
     -------
     RegressionResult
         Coefficients are labelled ``intercept``, ``<x>^1``, ..., ``<x>^degree``.
+
+    Raises
+    ------
+    KeyError
+        If ``x`` or ``y`` is not a column of ``data``.
+    ValueError
+        If ``degree`` is not a positive integer.
 
     Examples
     --------

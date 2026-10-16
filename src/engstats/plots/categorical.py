@@ -126,9 +126,7 @@ def plot_stackeddot(
     Parameters
     ----------
     data : pd.DataFrame
-        Source DataFrame. **Modified in place:** a ``stack`` column holding
-        each dot's height is added. Pass ``df.copy()`` to keep ``df``
-        unchanged.
+        Source DataFrame (not modified).
     x : str
         Column to plot.
     ax : matplotlib.axes.Axes, optional
@@ -141,7 +139,7 @@ def plot_stackeddot(
     Examples
     --------
     >>> df = es.load_dataset("concrete")
-    >>> es.plot_stackeddot(df.copy(), x="age_days")
+    >>> es.plot_stackeddot(df, x="age_days")
     """
     data = data.copy()  # the helper "stack" column should not leak to the caller
     data["stack"] = (data.groupby(x).cumcount() + 1) / 20
