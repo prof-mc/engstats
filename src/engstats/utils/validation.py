@@ -12,10 +12,26 @@ def require_numeric_1d(data, name: str = "data") -> np.ndarray:
     """
     Convert `data` to a 1-D float numpy array.
 
-    Raises descriptive ValueErrors for common student mistakes:
-    - passing a list of strings
-    - passing a 2-D array when a 1-D array is expected
-    - passing None or an empty array
+    Used by the analysis and plot functions to turn common student mistakes
+    into readable error messages.
+
+    Parameters
+    ----------
+    data : array-like
+        List, NumPy array or pandas Series. ``NaN`` values are kept.
+    name : str
+        Argument name to show in error messages. Default ``"data"``.
+
+    Returns
+    -------
+    np.ndarray
+        1-D float array.
+
+    Raises
+    ------
+    ValueError
+        If ``data`` is None, empty, all-NaN, not 1-D, or contains values
+        that cannot be converted to float (e.g. strings).
     """
     if data is None:
         raise ValueError(f"'{name}' cannot be None — did you forget to pass your data?")
@@ -52,6 +68,26 @@ def require_numeric_1d(data, name: str = "data") -> np.ndarray:
 def require_dataframe(data, columns: list[str] | None = None) -> pd.DataFrame:
     """
     Confirm `data` is a DataFrame, optionally checking that `columns` exist.
+
+    Parameters
+    ----------
+    data : object
+        Value to check.
+    columns : list of str, optional
+        Column names that must be present.
+
+    Returns
+    -------
+    pd.DataFrame
+        ``data``, unchanged.
+
+    Raises
+    ------
+    TypeError
+        If ``data`` is not a pandas DataFrame.
+    KeyError
+        If any name in ``columns`` is missing; the message lists the
+        available columns.
     """
     if not isinstance(data, pd.DataFrame):
         raise TypeError(

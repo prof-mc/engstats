@@ -12,7 +12,7 @@ y = \beta_0 + \beta_1 x + \varepsilon
 ```python
 df = es.load_dataset("concrete")
 model = es.simple_linear_regression(df, x="water_cement", y="strength_mpa")
-model.summary()      # coefficients, SEs, CIs, p-values, ANOVA table
+model.summary()      # prints coefficients, SEs, CIs, p-values, ANOVA table
 model.r_squared
 model.coefficients
 ```

@@ -21,7 +21,37 @@ def plot_scatter(
     title: str = "",
     ax: matplotlib.axes.Axes | None = None,
 ) -> matplotlib.axes.Axes:
+    """
+    Scatter plot of ``y`` against ``x``, optionally split by group.
 
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Source DataFrame. When ``group`` is given, that column is converted
+        to ``category`` dtype **in place**.
+    x, y : str
+        Column names for the horizontal and vertical axes.
+    group : str, optional
+        Categorical column; each level gets its own colour and marker. If
+        every level is a valid Matplotlib colour name (e.g. ``"red"``,
+        ``"tab:blue"``), those colours are used directly.
+    title : str
+        Plot title. Defaults to ``"Scatter Plot: <y> vs <x>"``.
+    ax : matplotlib.axes.Axes, optional
+        Existing axes to draw on.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+
+    For a fitted line through the points, use
+    [`plot_scatter_regression`][engstats.plots.regression.plot_scatter_regression].
+
+    Examples
+    --------
+    >>> df = es.load_dataset("bridges")
+    >>> es.plot_scatter(df, x="span_m", y="load_capacity_kn", group="material")
+    """
     if ax is None:
         _, ax = plt.subplots()
 
@@ -72,21 +102,34 @@ def plot_scatter_regression(
     """
     Scatter plot with a fitted regression line (and confidence band).
 
+    The band is a confidence interval for the **mean** response, estimated
+    by bootstrap. It is not a prediction interval for new observations.
+
     Parameters
     ----------
     data : pd.DataFrame
+        Source DataFrame.
     x, y : str
-        Column names.
+        Predictor and response column names.
     degree : int
-        Polynomial degree. 1 = straight line. Default 1.
-    ci : int
-        Confidence interval level (0–100). Default 95.
+        Polynomial degree of the fitted curve. 1 = straight line. Default 1.
+    ci : int or None
+        Confidence level for the band, in percent (0–100). ``None`` hides
+        the band. Default 95.
     title : str
+        Plot title. Defaults to ``"Scatter Plot: <y> vs <x>"``.
     ax : matplotlib.axes.Axes, optional
+        Existing axes to draw on.
 
     Returns
     -------
     matplotlib.axes.Axes
+
+    Examples
+    --------
+    >>> df = es.load_dataset("concrete")
+    >>> es.plot_scatter_regression(df, x="water_cement", y="strength_mpa")
+    >>> es.plot_scatter_regression(df, x="water_cement", y="strength_mpa", degree=2, ci=None)
     """
     if ax is None:
         _, ax = plt.subplots()
@@ -111,12 +154,28 @@ def plot_residuals(
     """
     Residuals vs. fitted values plot to check homoscedasticity.
 
+    A good fit shows points scattered evenly around zero with constant
+    spread. A funnel shape suggests non-constant variance; a curve suggests
+    a missing term.
+
     Parameters
     ----------
     model : RegressionResult
         Returned by any ``engstats`` regression function.
     title : str
+        Plot title. Defaults to ``"Residuals vs. Fitted Values"``.
     ax : matplotlib.axes.Axes, optional
+        Existing axes to draw on.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+
+    Examples
+    --------
+    >>> df = es.load_dataset("concrete")
+    >>> model = es.simple_linear_regression(df, x="water_cement", y="strength_mpa")
+    >>> es.plot_residuals(model)
     """
     if ax is None:
         _, ax = plt.subplots()
@@ -137,11 +196,27 @@ def plot_qq(
     """
     Normal Q-Q plot of regression residuals.
 
+    Points close to the dashed reference line indicate approximately normal
+    errors. Systematic curvature at the ends suggests skew or heavy tails.
+
     Parameters
     ----------
     model : RegressionResult
+        Returned by any ``engstats`` regression function.
     title : str
+        Plot title. Defaults to ``"Normal Q-Q Plot"``.
     ax : matplotlib.axes.Axes, optional
+        Existing axes to draw on.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+
+    Examples
+    --------
+    >>> df = es.load_dataset("concrete")
+    >>> model = es.simple_linear_regression(df, x="water_cement", y="strength_mpa")
+    >>> es.plot_qq(model)
     """
     if ax is None:
         _, ax = plt.subplots()
@@ -165,7 +240,10 @@ def plot_runplot(
     title: str = "",
 ) -> list[matplotlib.axes.Axes]:
     """
-    Plot one to four time series variables on shared or separate axes.
+    Plot one to four variables in run order, on shared or separate axes.
+
+    Use to look for trends, shifts or cycles over time or observation order.
+    Always creates a new figure.
 
     Parameters
     ----------
@@ -177,19 +255,29 @@ def plot_runplot(
         Column name(s) for the y-axis. Must contain between 1 and 4 names.
     separate : bool
         If True, each variable gets its own subplot with a shared x-axis.
-        If False, all series are overlaid on a single axes. Default True.
+        If False, all series are overlaid on a single axes (no legend is
+        drawn). Default True.
     title : str
         Overall figure title.
 
     Returns
     -------
-    list of matplotlib.axes.Axes
-        Always a list, even when only one axes is created.
+    None
+        The figure is drawn on the current Matplotlib figure; use
+        ``plt.gcf()`` to access it.
+
+    Raises
+    ------
+    ValueError
+        If ``y`` is not a list of 1 to 4 column names.
+    KeyError
+        If ``x`` or any name in ``y`` is not a column of ``data``.
 
     Examples
     --------
-    >>> es.plot_time_series(df, x="year", y=["load_kn"])
-    >>> es.plot_time_series(df, x="year", y=["load_kn", "span_m"], separate=False)
+    >>> df = es.load_dataset("circuits").reset_index()
+    >>> es.plot_runplot(df, x="index", y=["measured_ohm"])
+    >>> es.plot_runplot(df, x="index", y=["nominal_ohm", "measured_ohm"], separate=False)
     """
     if not isinstance(y, list) or not (1 <= len(y) <= 4):
         raise ValueError(
@@ -240,6 +328,37 @@ def plot_runplot_split(
     group: str,
     ax: matplotlib.axes.Axes = None
 ):
+    """
+    Run plot of one variable, with a separate line for each group.
+
+    Groups keep the order in which they first appear in ``data``. Useful for
+    comparing batches, shifts or machines over the same run order.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Source DataFrame (not modified).
+    x : str
+        Column for the x-axis (time or observation order).
+    y : str
+        Numeric column to plot.
+    group : str
+        Categorical column; each level gets its own line colour and marker.
+        If every level is a valid Matplotlib colour name, those colours are
+        used directly.
+    ax : matplotlib.axes.Axes, optional
+        Existing axes to draw on.
+
+    Returns
+    -------
+    None
+        Pass ``ax=`` to keep a handle on the axes.
+
+    Examples
+    --------
+    >>> df = es.load_dataset("circuits").reset_index()
+    >>> es.plot_runplot_split(df, x="index", y="measured_ohm", group="batch")
+    """
     if ax is None:
         _, ax = plt.subplots()
 
@@ -282,4 +401,4 @@ def plot_runplot_split(
     else:
         sns.lineplot(data, x=x, y=y, hue=group, marker="o")
 
-    return #ax
+    return #ax
