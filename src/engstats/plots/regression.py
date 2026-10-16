@@ -27,8 +27,7 @@ def plot_scatter(
     Parameters
     ----------
     data : pd.DataFrame
-        Source DataFrame. When ``group`` is given, that column is converted
-        to ``category`` dtype **in place**.
+        Source DataFrame (not modified).
     x, y : str
         Column names for the horizontal and vertical axes.
     group : str, optional
@@ -63,6 +62,7 @@ def plot_scatter(
             return False
 
     if group is not None:
+        data = data.copy()  # don't change the caller's column dtype
         data[group] = data[group].astype("category")
         unique_vals = data[group].dropna().unique()
 
@@ -255,16 +255,16 @@ def plot_runplot(
         Column name(s) for the y-axis. Must contain between 1 and 4 names.
     separate : bool
         If True, each variable gets its own subplot with a shared x-axis.
-        If False, all series are overlaid on a single axes (no legend is
-        drawn). Default True.
+        If False, all series are overlaid on a single axes with a legend.
+        Default True.
     title : str
         Overall figure title.
 
     Returns
     -------
-    None
-        The figure is drawn on the current Matplotlib figure; use
-        ``plt.gcf()`` to access it.
+    list of matplotlib.axes.Axes
+        One Axes per variable when ``separate=True``, a single-element list
+        otherwise. Always a list.
 
     Raises
     ------
@@ -298,14 +298,13 @@ def plot_runplot(
         ax_single.set_ylabel("Value")
         ax_single.set_title(title or "Time Series")
         ax_single.xaxis.set_major_locator(MaxNLocator(integer=True))
-        # ax_single.legend()
+        ax_single.legend()
         plt.tight_layout()
         return [ax_single]
 
     fig, axes = plt.subplots(n, 1, figsize=(9, 3 * n), sharex=True)
 
-    if n == 1:
-        axes = [axes]
+    axes = list(np.atleast_1d(axes))
 
     for ax, yvar in zip(axes, y):
         ax.plot(data[x], data[yvar], marker="o", label=yvar)
@@ -318,7 +317,7 @@ def plot_runplot(
         fig.suptitle(title, y=1.01)
 
     plt.tight_layout()
-    return #axes
+    return axes
 
 
 def plot_runplot_split(
@@ -342,8 +341,9 @@ def plot_runplot_split(
         Column for the x-axis (time or observation order).
     y : str
         Numeric column to plot.
-    group : str
+    group : str or None
         Categorical column; each level gets its own line colour and marker.
+        ``None`` draws a single line.
         If every level is a valid Matplotlib colour name, those colours are
         used directly.
     ax : matplotlib.axes.Axes, optional
@@ -351,8 +351,7 @@ def plot_runplot_split(
 
     Returns
     -------
-    None
-        Pass ``ax=`` to keep a handle on the axes.
+    matplotlib.axes.Axes
 
     Examples
     --------
@@ -399,6 +398,6 @@ def plot_runplot_split(
             ax=ax
         )
     else:
-        sns.lineplot(data, x=x, y=y, hue=group, marker="o")
+        sns.lineplot(data=data, x=x, y=y, marker="o", ax=ax)
 
-    return #ax
+    return ax
