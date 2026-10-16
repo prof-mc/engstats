@@ -1,0 +1,2 @@
+# Store text files with LF in the repo; each checkout converts per core.autocrlf.
+* text=auto
