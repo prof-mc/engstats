@@ -3,8 +3,9 @@
 **A companion Python package for GEN_ENG 231, introductory engineering statistics.**
 
 `engstats` wraps `statsmodels`, `scipy`, `seaborn`, and `matplotlib` behind a small set of
-student-friendly functions. Each analysis returns a tidy result object, and each plot
-returns (or draws on) a Matplotlib `Axes` with a consistent course theme.
+student-friendly functions. Each analysis returns a result object or a small DataFrame,
+and each plot draws with a consistent course theme. Most plots return the Matplotlib
+`Axes` they drew on; `plot_pairplot` returns a seaborn `PairGrid`.
 
 ```python
 import engstats as es
