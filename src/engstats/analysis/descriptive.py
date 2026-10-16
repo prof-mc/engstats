@@ -24,7 +24,9 @@ def five_number_summary(data, name: str = "x") -> pd.DataFrame:
     Returns
     -------
     pd.DataFrame
-        Single-row DataFrame with Min, Q1, Median, Q3, Max.
+        Single-row DataFrame with columns Min, Q1, Median, Q3, Max,
+        indexed by ``name``. Quartiles use linear interpolation, which can
+        differ slightly from hand-computed textbook values.
 
     Examples
     --------
@@ -51,6 +53,10 @@ def summary_stats(data, name: str = "x") -> pd.DataFrame:
 
     Includes n, mean, std, variance, min, Q1, median, Q3, max,
     IQR, skewness, and kurtosis.
+
+    ``std`` and ``variance`` are sample statistics (divide by n − 1).
+    ``kurtosis`` is excess kurtosis, so a normal distribution scores 0.
+    Quartiles use linear interpolation (``numpy.percentile`` default).
 
     Parameters
     ----------

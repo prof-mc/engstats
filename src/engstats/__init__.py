@@ -8,8 +8,8 @@ Quick start
 -----------
 >>> import engstats as es
 >>> df = es.load_dataset("concrete")
->>> model = es.simple_linear_regression(df, x="water_cement", y="strength")
->>> es.plot_scatter_regression(df, x="water_cement", y="strength")
+>>> model = es.simple_linear_regression(df, x="water_cement", y="strength_mpa")
+>>> es.plot_scatter_regression(df, x="water_cement", y="strength_mpa")
 """
 
 # Apply the default plot theme on import

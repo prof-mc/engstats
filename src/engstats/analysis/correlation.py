@@ -17,15 +17,24 @@ def pearson_r(x, y) -> dict:
     Parameters
     ----------
     x, y : array-like
-        Paired numeric data (equal length).
+        Paired numeric data of equal length.
 
     Returns
     -------
-    dict with keys: r, p_value, n
+    dict
+        ``{"r": float, "p_value": float, "n": int}``. ``r`` and ``p_value``
+        are rounded to 6 decimal places; ``p_value`` is two-sided for
+        H₀: ρ = 0.
+
+    Raises
+    ------
+    ValueError
+        If ``x`` and ``y`` differ in length or contain non-numeric values.
 
     Examples
     --------
-    >>> es.pearson_r(df["x"], df["y"])
+    >>> df = es.load_dataset("concrete")
+    >>> es.pearson_r(df["water_cement"], df["strength_mpa"])
     """
     x = require_numeric_1d(x, "x")
     y = require_numeric_1d(y, "y")
@@ -39,13 +48,29 @@ def spearman_rho(x, y) -> dict:
     """
     Compute the Spearman rank correlation coefficient and p-value.
 
+    Use instead of [`pearson_r`][engstats.analysis.correlation.pearson_r] when the relationship is monotonic but
+    not linear, or when outliers dominate.
+
     Parameters
     ----------
     x, y : array-like
+        Paired numeric data of equal length.
 
     Returns
     -------
-    dict with keys: rho, p_value, n
+    dict
+        ``{"rho": float, "p_value": float, "n": int}``, rounded to 6 decimal
+        places; ``p_value`` is two-sided for H₀: ρ = 0.
+
+    Raises
+    ------
+    ValueError
+        If ``x`` and ``y`` differ in length or contain non-numeric values.
+
+    Examples
+    --------
+    >>> df = es.load_dataset("concrete")
+    >>> es.spearman_rho(df["age_days"], df["strength_mpa"])
     """
     x = require_numeric_1d(x, "x")
     y = require_numeric_1d(y, "y")
@@ -59,15 +84,24 @@ def correlation_matrix(data: pd.DataFrame, method: str = "pearson") -> pd.DataFr
     """
     Compute a pairwise correlation matrix for all numeric columns.
 
+    Non-numeric columns are dropped before computing.
+
     Parameters
     ----------
     data : pd.DataFrame
+        Must contain at least two numeric columns.
     method : {'pearson', 'spearman', 'kendall'}
+        Correlation coefficient to compute. Default ``'pearson'``.
 
     Returns
     -------
     pd.DataFrame
-        Symmetric correlation matrix.
+        Symmetric correlation matrix, rounded to 4 decimal places.
+
+    Raises
+    ------
+    ValueError
+        If fewer than two numeric columns are present.
 
     Examples
     --------
