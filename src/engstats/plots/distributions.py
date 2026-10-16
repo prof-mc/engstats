@@ -272,6 +272,113 @@ def plot_ecdf(
     return ax
 
 
+def plot_probability(
+    data: pd.DataFrame,
+    x: str,
+    ci: float = 0.95,
+    xlim_left: float | None = None,
+    title: str = "",
+    xlabel: str = "",
+    ax: matplotlib.axes.Axes | None = None,
+) -> matplotlib.axes.Axes:
+    """
+    Normal probability plot with a fitted line and prediction interval band.
+
+    The ordered data are plotted against their normal scores. The y-axis is
+    labelled in percentiles on a probit scale, so it looks like normal
+    probability paper: points close to a straight line suggest the data are
+    approximately normal.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        DataFrame containing the variable of interest.
+    x : str
+        Column name of the variable to assess.
+    ci : float
+        Confidence level for the prediction interval (0–1). Default 0.95.
+    xlim_left : float, optional
+        Force the left limit of the x-axis. Useful for variables with a
+        natural lower bound (e.g. pass ``xlim_left=0`` for time or load).
+        Defaults to None (let matplotlib decide).
+    title : str
+        Plot title. Defaults to ``'Normal Probability Plot: <x>'``.
+    xlabel : str
+        X-axis label. Defaults to the column name.
+    ax : matplotlib.axes.Axes, optional
+        Existing axes to draw on.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+
+    Examples
+    --------
+    >>> df = es.load_dataset("concrete")
+    >>> es.plot_probability(df, x="strength_mpa")
+    >>> es.plot_probability(df, x="age_days", ci=0.99, xlim_left=0)
+    """
+    import statsmodels.api as sm
+    from matplotlib.lines import Line2D
+    from scipy import stats
+
+    from engstats.utils.validation import require_dataframe
+    require_dataframe(data, columns=[x])
+
+    if not (0 < ci < 1):
+        raise ValueError(f"'ci' must be between 0 and 1, got {ci}.")
+
+    values = pd.to_numeric(data[x], errors="coerce").dropna().to_numpy()
+    if len(values) < 3:
+        raise ValueError(
+            f"Column '{x}' has fewer than 3 numeric, non-null values — "
+            f"not enough data to fit a probability plot."
+        )
+
+    # Normal scores (osm) and ordered data (osr)
+    (osm, osr), _ = stats.probplot(values, dist="norm")
+
+    # Regress normal scores on the ordered data, then predict over a grid
+    ols_model = sm.OLS(osm, sm.add_constant(osr)).fit()
+    x_grid = np.linspace(osr.min(), osr.max(), 300)
+    sf = ols_model.get_prediction(sm.add_constant(x_grid)).summary_frame(alpha=1 - ci)
+
+    if ax is None:
+        _, ax = plt.subplots(figsize=(6, 6))
+
+    ax.scatter(osr, osm, s=18, alpha=0.7, zorder=3, label="Data")
+    ax.plot(x_grid, sf["mean"], "r--", linewidth=2, label="Fitted line")
+    ax.fill_between(
+        x_grid,
+        sf["obs_ci_lower"],
+        sf["obs_ci_upper"],
+        color="green",
+        alpha=0.15,
+        label=f"{ci * 100:g}% PI",
+    )
+
+    # Percentile ticks on the probit scale
+    pticks = np.array([1, 5, 10, 25, 50, 75, 90, 95, 99])
+    ax.set_yticks(stats.norm.ppf(pticks / 100))
+    ax.set_yticklabels([f"{p:g}%" for p in pticks])
+
+    if xlim_left is not None:
+        ax.set_xlim(left=xlim_left)
+
+    handles, _ = ax.get_legend_handles_labels()
+    handles.append(Line2D(
+        [], [], linestyle="none",
+        label=f"n = {len(values)}\nμ = {values.mean():.3g}\nσ = {values.std(ddof=1):.3g}",
+    ))
+
+    ax.set_xlabel(xlabel or x)
+    ax.set_ylabel("Percentile")
+    ax.set_title(title or f"Normal Probability Plot: {x}")
+    ax.legend(handles=handles)
+    plt.tight_layout()
+    return ax
+
+
 def plot_pareto(
     data: pd.DataFrame,
     x: str,

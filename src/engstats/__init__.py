@@ -53,6 +53,7 @@ from engstats.plots.distributions import (
     plot_boxplot,
     plot_violin,
     plot_ecdf,
+    plot_probability,
     plot_pareto,
     plot_side_by_side
 )
@@ -69,6 +70,7 @@ from engstats.plots.categorical import (
     plot_grouped_bar,
     plot_stackeddot
 )
+from engstats.plots.inference import plot_confidence_interval
 from engstats.plots.multivariate import (
     plot_correlation_heatmap,
     plot_pairplot,
@@ -89,6 +91,7 @@ __all__ = [
     "pearson_r", "spearman_rho", "correlation_matrix",
     # distribution plots
     "plot_histogram", "plot_kde", "plot_boxplot", "plot_violin", "plot_ecdf",
+    "plot_probability",
     "plot_pareto", "plot_side_by_side",
     # regression plots
     "plot_scatter", "plot_scatter_regression", "plot_residuals", "plot_qq",
@@ -97,6 +100,8 @@ __all__ = [
     "plot_bar", "plot_grouped_bar", "plot_stackeddot",
     # multivariate plots
     "plot_correlation_heatmap", "plot_pairplot",
+    # inference plots
+    "plot_confidence_interval",
     # io
     "load_dataset",
 ]

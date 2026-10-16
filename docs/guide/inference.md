@@ -16,8 +16,12 @@ one-row DataFrame.
 
 ```python
 df = es.load_dataset("circuits")
-es.one_sample_ttest(df["measured_ohm"], popmean=100)
+result = es.one_sample_ttest(df["measured_ohm"], popmean=100)
+es.plot_confidence_interval(result)
 ```
+
+`plot_confidence_interval` works with any t-test result and marks the null-hypothesis
+value with a dashed line, so you can see whether the interval excludes it.
 
 ## Two-sample t-test
 

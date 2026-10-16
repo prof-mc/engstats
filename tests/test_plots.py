@@ -8,12 +8,14 @@ import matplotlib.pyplot as plt
 import pytest
 
 from engstats.plots.distributions import (
-    plot_histogram, plot_kde, plot_boxplot, plot_violin, plot_ecdf
+    plot_histogram, plot_kde, plot_boxplot, plot_violin, plot_ecdf, plot_probability
 )
 from engstats.plots.regression import plot_scatter_regression, plot_residuals, plot_qq
 from engstats.plots.categorical import plot_bar, plot_grouped_bar
 from engstats.plots.multivariate import plot_correlation_heatmap, plot_pairplot
+from engstats.plots.inference import plot_confidence_interval
 from engstats.analysis.regression import simple_linear_regression
+from engstats.analysis.inference import one_sample_ttest, two_sample_ttest, chi_square_test
 
 rng = np.random.default_rng(7)
 DATA = rng.normal(50, 10, 60)
@@ -51,6 +53,20 @@ def test_violin_values():
 def test_ecdf_returns_axes():
     ax = plot_ecdf(DATA)
     assert hasattr(ax, "get_title")
+
+
+def test_probability_returns_axes():
+    df = pd.DataFrame({"v": np.append(DATA, np.nan)})
+    ax = plot_probability(df, x="v", ci=0.9, xlim_left=0)
+    labels = [t.get_text() for t in ax.get_legend().get_texts()]
+    assert "90% PI" in labels
+    assert any(t.startswith(f"n = {len(DATA)}\n") for t in labels)
+    assert ax.get_xlim()[0] == 0
+
+
+def test_probability_rejects_bad_ci():
+    with pytest.raises(ValueError):
+        plot_probability(DF, x="y", ci=95)
 
 
 def test_scatter_regression_returns_axes():
@@ -134,3 +150,24 @@ def test_scatter_group_does_not_modify_input():
     df = DF.copy()
     plot_scatter(df, x="x", y="y", group="group")
     assert df["group"].dtype == DF["group"].dtype
+
+
+def test_confidence_interval_one_sample():
+    result = one_sample_ttest(DATA, popmean=45, confidence=0.9)
+    ax = plot_confidence_interval(result)
+    assert ax.get_title() == "90% Confidence Interval"
+    assert ax.get_xlabel() == "μ"
+    lo, hi = ax.get_xlim()
+    assert lo < min(result.conf_int_low, 45) and hi > result.conf_int_high
+
+
+def test_confidence_interval_one_sided():
+    a, b = DATA[:30], DATA[30:]
+    ax = plot_confidence_interval(two_sample_ttest(a, b, alternative="greater"))
+    assert np.all(np.isfinite(ax.get_xlim()))
+    assert ax.get_xlabel() == "μ_a − μ_b"
+
+
+def test_confidence_interval_rejects_no_ci():
+    with pytest.raises(ValueError, match="no confidence interval"):
+        plot_confidence_interval(chi_square_test(observed=[18, 22, 20]))
