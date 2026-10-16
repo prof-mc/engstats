@@ -112,6 +112,7 @@ nav:
           - Regression: reference/plots/regression.md
           - Categorical: reference/plots/categorical.md
           - Multivariate: reference/plots/multivariate.md
+          - Inference: reference/plots/inference.md
           - Theme: reference/plots/theme.md
       - Utilities:
           - I/O: reference/utils/io.md
