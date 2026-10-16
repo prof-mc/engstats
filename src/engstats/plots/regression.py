@@ -33,6 +33,7 @@ def plot_scatter(
             return False
 
     if group is not None:
+        data = data.copy()  # don't change the caller's column dtype
         data[group] = data[group].astype("category")
         unique_vals = data[group].dropna().unique()
 
@@ -210,14 +211,13 @@ def plot_runplot(
         ax_single.set_ylabel("Value")
         ax_single.set_title(title or "Time Series")
         ax_single.xaxis.set_major_locator(MaxNLocator(integer=True))
-        # ax_single.legend()
+        ax_single.legend()
         plt.tight_layout()
         return [ax_single]
 
     fig, axes = plt.subplots(n, 1, figsize=(9, 3 * n), sharex=True)
 
-    if n == 1:
-        axes = [axes]
+    axes = list(np.atleast_1d(axes))
 
     for ax, yvar in zip(axes, y):
         ax.plot(data[x], data[yvar], marker="o", label=yvar)
@@ -230,7 +230,7 @@ def plot_runplot(
         fig.suptitle(title, y=1.01)
 
     plt.tight_layout()
-    return #axes
+    return axes
 
 
 def plot_runplot_split(
@@ -280,6 +280,6 @@ def plot_runplot_split(
             ax=ax
         )
     else:
-        sns.lineplot(data, x=x, y=y, hue=group, marker="o")
+        sns.lineplot(data=data, x=x, y=y, marker="o", ax=ax)
 
-    return #ax
+    return ax

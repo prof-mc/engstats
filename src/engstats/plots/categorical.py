@@ -77,6 +77,7 @@ def plot_stackeddot(
         x: str,
         ax: matplotlib.axes.Axes | None = None,
 ):
+    data = data.copy()  # the helper "stack" column must not leak to the caller
     data["stack"] = (data.groupby(x).cumcount() + 1) / 20
 
     if ax is None:

@@ -156,9 +156,11 @@ def chi_square_test(observed, expected=None) -> InferenceResult:
     obs = np.asarray(observed)
     if obs.ndim == 2:
         chi2, p, dof, _ = stats.chi2_contingency(obs)
-        return InferenceResult("Chi-square test of independence", chi2, p, {"dof": dof})
+        return InferenceResult("Chi-square test of independence", chi2, p,
+                               extra={"dof": int(dof)})
     chi2, p = stats.chisquare(obs, f_exp=expected)
-    return InferenceResult("Chi-square goodness-of-fit", chi2, p)
+    return InferenceResult("Chi-square goodness-of-fit", chi2, p,
+                           extra={"dof": obs.size - 1})
 
 
 def anova_oneway(*groups) -> InferenceResult:
@@ -176,4 +178,5 @@ def anova_oneway(*groups) -> InferenceResult:
     """
     cleaned = [require_numeric_1d(g, f"group_{i+1}") for i, g in enumerate(groups)]
     f, p = stats.f_oneway(*cleaned)
-    return InferenceResult("One-way ANOVA", f, p, {"k": len(cleaned)})
+    return InferenceResult("One-way ANOVA", f, p,
+                           extra={"k": len(cleaned), "n": sum(len(g) for g in cleaned)})

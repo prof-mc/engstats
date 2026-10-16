@@ -40,11 +40,12 @@ class RegressionResult:
         self._result = result
         names = feature_names or result.model.exog_names
         self.n = len(result.resid)
-        self.coefficients = pd.Series(result.params, index=names)
-        self.se_coefficients = pd.Series(result.bse, index=names)
+        # np.asarray: relabel by position, not by statsmodels' own term names
+        self.coefficients = pd.Series(np.asarray(result.params), index=names)
+        self.se_coefficients = pd.Series(np.asarray(result.bse), index=names)
         self.r_squared = result.rsquared
         self.adj_r_squared = result.rsquared_adj
-        self.p_values = pd.Series(result.pvalues, index=names)
+        self.p_values = pd.Series(np.asarray(result.pvalues), index=names)
         self.conf_int = pd.DataFrame(result.conf_int()).set_axis(names)
         self.conf_int.columns = ["95% CI_lower", "95% CI_upper"]
         self.residuals = np.asarray(result.resid)
@@ -61,7 +62,7 @@ class RegressionResult:
                 "CI[0.025]": self.conf_int["95% CI_lower"],
                 "CI[0.975]": self.conf_int["95% CI_upper"],
                 "p_value": self.p_values,
-                "crit_value": self._result.tvalues,
+                "crit_value": np.asarray(self._result.tvalues),
             }
         )
         df.index.name = "term"
@@ -175,9 +176,11 @@ def polynomial_regression(
     >>> model = es.polynomial_regression(df, x="temp", y="yield", degree=3)
     """
     data = require_dataframe(data, [x, y])
-    x_vals = data[x].values
+    if not (isinstance(degree, int) and degree >= 1):
+        raise ValueError(f"'degree' must be a positive integer, got {degree!r}.")
+    # Fit through a formula (not a bare design matrix) so summary() can build
+    # the ANOVA table, which needs the formula's term structure.
+    terms = [x] + [f"I({x} ** {i})" for i in range(2, degree + 1)]
+    result = ols(formula=f"{y} ~ {' + '.join(terms)}", data=data).fit()
     feature_names = ["intercept"] + [f"{x}^{i}" for i in range(1, degree + 1)]
-    X = np.column_stack([x_vals**i for i in range(1, degree + 1)])
-    X = sm.add_constant(X)
-    result = sm.OLS(data[y].values, X).fit()
     return RegressionResult(result, feature_names=feature_names)

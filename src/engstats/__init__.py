@@ -82,10 +82,12 @@ __all__ = [
     "pearson_r", "spearman_rho", "correlation_matrix",
     # distribution plots
     "plot_histogram", "plot_kde", "plot_boxplot", "plot_violin", "plot_ecdf",
+    "plot_pareto", "plot_side_by_side",
     # regression plots
-    "plot_scatter_regression", "plot_residuals", "plot_qq",
+    "plot_scatter", "plot_scatter_regression", "plot_residuals", "plot_qq",
+    "plot_runplot", "plot_runplot_split",
     # categorical plots
-    "plot_bar", "plot_grouped_bar",
+    "plot_bar", "plot_grouped_bar", "plot_stackeddot",
     # multivariate plots
     "plot_correlation_heatmap", "plot_pairplot",
     # io
