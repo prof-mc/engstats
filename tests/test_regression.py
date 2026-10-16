@@ -52,3 +52,28 @@ def test_polynomial_regression():
 def test_missing_column_raises():
     with pytest.raises(KeyError):
         simple_linear_regression(df, x="nonexistent", y="y")
+
+
+def test_polynomial_regression_matches_polyfit():
+    model = polynomial_regression(df, x="x", y="y", degree=3)
+    expected = np.polyfit(df["x"], df["y"], 3)[::-1]  # intercept first
+    assert np.allclose(model.coefficients.values, expected)
+    assert list(model.coefficients.index) == ["intercept", "x^1", "x^2", "x^3"]
+
+
+def test_polynomial_regression_summary_runs(capsys):
+    polynomial_regression(df, x="x", y="y", degree=2).summary()
+    out = capsys.readouterr().out
+    assert "R²" in out and "Residual" in out  # ANOVA table printed
+
+
+@pytest.mark.parametrize("bad", [0, -1, 2.5])
+def test_polynomial_regression_rejects_bad_degree(bad):
+    with pytest.raises(ValueError):
+        polynomial_regression(df, x="x", y="y", degree=bad)
+
+
+def test_polynomial_summary_table_has_no_nan(capsys):
+    polynomial_regression(df, x="x", y="y", degree=2).summary()
+    coef_table = capsys.readouterr().out.split("-----")[0]
+    assert "NaN" not in coef_table
